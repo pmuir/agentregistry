@@ -73,10 +73,10 @@ arctl list -A
 ### Access the Web UI
 
 ```bash
-# Launch the embedded web interface
-arctl ui
+# Ensure the registry server is running 
+arctl list -A
 
-# Open http://localhost:8080 in your browser
+# Open http://localhost:12121/ in your browser
 ```
 
 ## 📚 Core Concepts
