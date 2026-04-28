@@ -42,6 +42,7 @@ Supported types:
   mcp   FRAMEWORK NAME
   skill NAME
   prompt NAME
+  agentgateway NAME
 
 Examples:
   arctl init agent adk python myagent
