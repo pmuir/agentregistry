@@ -34,8 +34,10 @@ Examples:
   arctl get all
   arctl get agents
   arctl get mcps
+  arctl get agentgateways
   arctl get agent acme/summarizer
   arctl get agent acme/summarizer -o yaml
+  arctl get agentgateway my-gateway
   arctl get skills -o json`,
 		Args:         cobra.RangeArgs(1, 2),
 		SilenceUsage: true,

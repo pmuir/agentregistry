@@ -48,13 +48,15 @@ Examples:
   arctl init agent adk python myagent
   arctl init mcp fastmcp-python myorg/my-server
   arctl init skill my-skill
-  arctl init prompt my-prompt`,
+  arctl init prompt my-prompt
+  arctl init agentgateway my-gateway`,
 		SilenceUsage: true,
 	}
 	cmd.AddCommand(newInitAgentCmd())
 	cmd.AddCommand(newInitMCPCmd())
 	cmd.AddCommand(newInitSkillCmd())
 	cmd.AddCommand(newInitPromptCmd())
+	cmd.AddCommand(newInitAgentGatewayCmd())
 
 	// init is an offline scaffolding command — hide inherited registry flags
 	// from --help output. Subcommands inherit the help func from the parent.
@@ -645,6 +647,73 @@ The generated file can be applied directly:
 	cmd.Flags().StringVar(&initContent, "content", "You are a helpful assistant.", "Initial prompt content")
 
 	return cmd
+}
+
+func newInitAgentGatewayCmd() *cobra.Command {
+	var initAddress string
+
+	cmd := &cobra.Command{
+		Use:   "agentgateway NAME",
+		Short: "Create a new declarative <name>.yaml for an agent gateway",
+		Long: `Create a new <name>.yaml in the current directory using the
+ar.dev/v1alpha1 declarative format. No code scaffolding is generated.
+
+The generated file can be applied directly:
+  arctl apply -f my-gateway.yaml`,
+		Example: `  arctl init agentgateway my-gateway
+  arctl init agentgateway my-gateway --address http://gateway.example.com:8081`,
+		Args:         cobra.ExactArgs(1),
+		SilenceUsage: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			name := args[0]
+
+			if err := validators.ValidateSkillName(name); err != nil {
+				return fmt.Errorf("invalid agent gateway name: %w", err)
+			}
+
+			cwd, err := os.Getwd()
+			if err != nil {
+				return fmt.Errorf("getting working directory: %w", err)
+			}
+			outPath := filepath.Join(cwd, name+".yaml")
+
+			if err := writeDeclarativeAgentGatewayYAML(outPath, name, initAddress); err != nil {
+				return fmt.Errorf("writing declarative agentgateway.yaml: %w", err)
+			}
+
+			fmt.Fprintf(cmd.OutOrStdout(), "Successfully created agent gateway: %s\n", name)
+			fmt.Fprintf(cmd.OutOrStdout(), "\nNext steps:\n")
+			fmt.Fprintf(cmd.OutOrStdout(), "  1. Edit %s.yaml if needed\n", name)
+			fmt.Fprintf(cmd.OutOrStdout(), "  2. Register the gateway:\n")
+			fmt.Fprintf(cmd.OutOrStdout(), "     arctl apply -f %s.yaml\n", name)
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVar(&initAddress, "address", "http://localhost:8081", "Gateway address URL")
+
+	return cmd
+}
+
+func writeDeclarativeAgentGatewayYAML(path, name, address string) error {
+	doc := struct {
+		APIVersion string                `yaml:"apiVersion"`
+		Kind       string                `yaml:"kind"`
+		Metadata   kinds.Metadata        `yaml:"metadata"`
+		Spec       kinds.AgentGatewaySpec `yaml:"spec"`
+	}{
+		APIVersion: scheme.APIVersion,
+		Kind:       "AgentGateway",
+		Metadata:   kinds.Metadata{Name: name},
+		Spec:       kinds.AgentGatewaySpec{Address: address},
+	}
+
+	b, err := yaml.Marshal(doc)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(path, b, 0o644)
 }
 
 func writeDeclarativePromptYAML(path, name, ver, description, content string) error {

@@ -30,13 +30,14 @@ File mode (declarative): reads resources from the YAML file and sends DELETE /v0
 Explicit mode: specify type, name, and --version directly.
   arctl delete TYPE NAME --version VERSION
 
-TYPE must be one of: agent, mcp, skill, prompt
+TYPE must be one of: agent, mcp, skill, prompt, provider, deployment, agentgateway
 (plural and uppercase forms also accepted)`,
 		Example: `  arctl delete -f my-agent/agent.yaml
   arctl delete -f my-server/mcp.yaml
   arctl delete agent acme/summarizer --version 1.0.0
   arctl delete mcp acme/fetch --version 1.0.0
-  arctl delete deployment my-agent --version 1.0.0 --force`,
+  arctl delete deployment my-agent --version 1.0.0 --force
+  arctl delete agentgateway my-gateway`,
 		SilenceUsage: true,
 		RunE:         runDeclarativeDelete,
 	}
