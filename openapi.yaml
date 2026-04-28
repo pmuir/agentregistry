@@ -4,6 +4,102 @@ info:
     description: AgentRegistry API for managing MCP servers, agents, skills, and deployments.
     version: dev
 paths:
+    /v0/agentgateways:
+        get:
+            tags:
+                - agentgateways
+            summary: List agent gateways
+            description: List registered agentgateway instances.
+            operationId: list-agent-gateways
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AgentGatewaysListResponseBody'
+                default:
+                    description: Error
+                    content:
+                        application/problem+json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorModel'
+        post:
+            tags:
+                - agentgateways
+            summary: Create agent gateway
+            description: Register a new agentgateway instance.
+            operationId: create-agent-gateway
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateAgentGatewayInput'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AgentGateway'
+                default:
+                    description: Error
+                    content:
+                        application/problem+json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorModel'
+    /v0/agentgateways/{gatewayId}:
+        get:
+            tags:
+                - agentgateways
+            summary: Get agent gateway
+            description: Get an agentgateway instance by ID.
+            operationId: get-agent-gateway
+            parameters:
+                - name: gatewayId
+                  in: path
+                  description: Agent gateway ID
+                  required: true
+                  schema:
+                    type: string
+                    description: Agent gateway ID
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AgentGateway'
+                default:
+                    description: Error
+                    content:
+                        application/problem+json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorModel'
+        delete:
+            tags:
+                - agentgateways
+            summary: Delete agent gateway
+            description: Delete an agentgateway instance by ID.
+            operationId: delete-agent-gateway
+            parameters:
+                - name: gatewayId
+                  in: path
+                  description: Agent gateway ID
+                  required: true
+                  schema:
+                    type: string
+                    description: Agent gateway ID
+            responses:
+                "204":
+                    description: No Content
+                default:
+                    description: Error
+                    content:
+                        application/problem+json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorModel'
     /v0/agents:
         get:
             tags:
@@ -1524,6 +1620,45 @@ paths:
                                 $ref: '#/components/schemas/ErrorModel'
 components:
     schemas:
+        AgentGateway:
+            type: object
+            additionalProperties: false
+            properties:
+                address:
+                    type: string
+                createdAt:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                name:
+                    type: string
+                status:
+                    type: string
+                updatedAt:
+                    type: string
+                    format: date-time
+            required:
+                - id
+                - name
+                - address
+                - status
+                - createdAt
+                - updatedAt
+        AgentGatewaysListResponseBody:
+            type: object
+            additionalProperties: false
+            properties:
+                agentGateways:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AgentGateway'
+                count:
+                    type: integer
+                    format: int64
+            required:
+                - agentGateways
+                - count
         AgentJSON:
             type: object
             additionalProperties: false
@@ -1767,6 +1902,19 @@ components:
                         $ref: '#/components/schemas/Input'
             required:
                 - type
+        CreateAgentGatewayInput:
+            type: object
+            additionalProperties: false
+            properties:
+                address:
+                    type: string
+                id:
+                    type: string
+                name:
+                    type: string
+            required:
+                - name
+                - address
         CreateProviderInput:
             type: object
             additionalProperties: false

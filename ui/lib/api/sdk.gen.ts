@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ApplyData, ApplyErrors, ApplyResponses, CancelDeploymentData, CancelDeploymentErrors, CancelDeploymentResponses, CreateAgentV0Data, CreateAgentV0Errors, CreateAgentV0Responses, CreatePromptV0Data, CreatePromptV0Errors, CreatePromptV0Responses, CreateProviderData, CreateProviderErrors, CreateProviderResponses, CreateServerV0Data, CreateServerV0Errors, CreateServerV0Responses, CreateSkillV0Data, CreateSkillV0Errors, CreateSkillV0Responses, DeleteAgentVersionV0Data, DeleteAgentVersionV0Errors, DeleteAgentVersionV0Responses, DeleteApplyData, DeleteApplyErrors, DeleteApplyResponses, DeletePromptVersionV0Data, DeletePromptVersionV0Errors, DeletePromptVersionV0Responses, DeleteProviderData, DeleteProviderErrors, DeleteProviderResponses, DeleteServerVersionV0Data, DeleteServerVersionV0Errors, DeleteServerVersionV0Responses, DeleteSkillVersionV0Data, DeleteSkillVersionV0Errors, DeleteSkillVersionV0Responses, DeployServerData, DeployServerErrors, DeployServerResponses, EditServerV0Data, EditServerV0Errors, EditServerV0Responses, GetAgentVersionsV0Data, GetAgentVersionsV0Errors, GetAgentVersionsV0Responses, GetAgentVersionV0Data, GetAgentVersionV0Errors, GetAgentVersionV0Responses, GetDeploymentData, GetDeploymentErrors, GetDeploymentLogsData, GetDeploymentLogsErrors, GetDeploymentLogsResponses, GetDeploymentResponses, GetHealthV0Data, GetHealthV0Errors, GetHealthV0Responses, GetPromptVersionsV0Data, GetPromptVersionsV0Errors, GetPromptVersionsV0Responses, GetPromptVersionV0Data, GetPromptVersionV0Errors, GetPromptVersionV0Responses, GetProviderData, GetProviderErrors, GetProviderResponses, GetServerReadmeV0Data, GetServerReadmeV0Errors, GetServerReadmeV0Responses, GetServerVersionReadmeV0Data, GetServerVersionReadmeV0Errors, GetServerVersionReadmeV0Responses, GetServerVersionsV0Data, GetServerVersionsV0Errors, GetServerVersionsV0Responses, GetServerVersionV0Data, GetServerVersionV0Errors, GetServerVersionV0Responses, GetSkillVersionsV0Data, GetSkillVersionsV0Errors, GetSkillVersionsV0Responses, GetSkillVersionV0Data, GetSkillVersionV0Errors, GetSkillVersionV0Responses, GetVersionV0Data, GetVersionV0Errors, GetVersionV0Responses, ListAgentsV0Data, ListAgentsV0Errors, ListAgentsV0Responses, ListDeploymentsData, ListDeploymentsErrors, ListDeploymentsResponses, ListPromptsV0Data, ListPromptsV0Errors, ListPromptsV0Responses, ListProvidersData, ListProvidersErrors, ListProvidersResponses, ListServersV0Data, ListServersV0Errors, ListServersV0Responses, ListSkillsV0Data, ListSkillsV0Errors, ListSkillsV0Responses, PingV0Data, PingV0Errors, PingV0Responses, RemoveDeploymentData, RemoveDeploymentErrors, RemoveDeploymentResponses } from './types.gen';
+import type { ApplyData, ApplyErrors, ApplyResponses, CancelDeploymentData, CancelDeploymentErrors, CancelDeploymentResponses, CreateAgentGatewayData, CreateAgentGatewayErrors, CreateAgentGatewayResponses, CreateAgentV0Data, CreateAgentV0Errors, CreateAgentV0Responses, CreatePromptV0Data, CreatePromptV0Errors, CreatePromptV0Responses, CreateProviderData, CreateProviderErrors, CreateProviderResponses, CreateServerV0Data, CreateServerV0Errors, CreateServerV0Responses, CreateSkillV0Data, CreateSkillV0Errors, CreateSkillV0Responses, DeleteAgentGatewayData, DeleteAgentGatewayErrors, DeleteAgentGatewayResponses, DeleteAgentVersionV0Data, DeleteAgentVersionV0Errors, DeleteAgentVersionV0Responses, DeleteApplyData, DeleteApplyErrors, DeleteApplyResponses, DeletePromptVersionV0Data, DeletePromptVersionV0Errors, DeletePromptVersionV0Responses, DeleteProviderData, DeleteProviderErrors, DeleteProviderResponses, DeleteServerVersionV0Data, DeleteServerVersionV0Errors, DeleteServerVersionV0Responses, DeleteSkillVersionV0Data, DeleteSkillVersionV0Errors, DeleteSkillVersionV0Responses, DeployServerData, DeployServerErrors, DeployServerResponses, EditServerV0Data, EditServerV0Errors, EditServerV0Responses, GetAgentGatewayData, GetAgentGatewayErrors, GetAgentGatewayResponses, GetAgentVersionsV0Data, GetAgentVersionsV0Errors, GetAgentVersionsV0Responses, GetAgentVersionV0Data, GetAgentVersionV0Errors, GetAgentVersionV0Responses, GetDeploymentData, GetDeploymentErrors, GetDeploymentLogsData, GetDeploymentLogsErrors, GetDeploymentLogsResponses, GetDeploymentResponses, GetHealthV0Data, GetHealthV0Errors, GetHealthV0Responses, GetPromptVersionsV0Data, GetPromptVersionsV0Errors, GetPromptVersionsV0Responses, GetPromptVersionV0Data, GetPromptVersionV0Errors, GetPromptVersionV0Responses, GetProviderData, GetProviderErrors, GetProviderResponses, GetServerReadmeV0Data, GetServerReadmeV0Errors, GetServerReadmeV0Responses, GetServerVersionReadmeV0Data, GetServerVersionReadmeV0Errors, GetServerVersionReadmeV0Responses, GetServerVersionsV0Data, GetServerVersionsV0Errors, GetServerVersionsV0Responses, GetServerVersionV0Data, GetServerVersionV0Errors, GetServerVersionV0Responses, GetSkillVersionsV0Data, GetSkillVersionsV0Errors, GetSkillVersionsV0Responses, GetSkillVersionV0Data, GetSkillVersionV0Errors, GetSkillVersionV0Responses, GetVersionV0Data, GetVersionV0Errors, GetVersionV0Responses, ListAgentGatewaysData, ListAgentGatewaysErrors, ListAgentGatewaysResponses, ListAgentsV0Data, ListAgentsV0Errors, ListAgentsV0Responses, ListDeploymentsData, ListDeploymentsErrors, ListDeploymentsResponses, ListPromptsV0Data, ListPromptsV0Errors, ListPromptsV0Responses, ListProvidersData, ListProvidersErrors, ListProvidersResponses, ListServersV0Data, ListServersV0Errors, ListServersV0Responses, ListSkillsV0Data, ListSkillsV0Errors, ListSkillsV0Responses, PingV0Data, PingV0Errors, PingV0Responses, RemoveDeploymentData, RemoveDeploymentErrors, RemoveDeploymentResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -17,6 +17,41 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
      */
     meta?: Record<string, unknown>;
 };
+
+/**
+ * List agent gateways
+ *
+ * List registered agentgateway instances.
+ */
+export const listAgentGateways = <ThrowOnError extends boolean = false>(options?: Options<ListAgentGatewaysData, ThrowOnError>) => (options?.client ?? client).get<ListAgentGatewaysResponses, ListAgentGatewaysErrors, ThrowOnError>({ url: '/v0/agentgateways', ...options });
+
+/**
+ * Create agent gateway
+ *
+ * Register a new agentgateway instance.
+ */
+export const createAgentGateway = <ThrowOnError extends boolean = false>(options: Options<CreateAgentGatewayData, ThrowOnError>) => (options.client ?? client).post<CreateAgentGatewayResponses, CreateAgentGatewayErrors, ThrowOnError>({
+    url: '/v0/agentgateways',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete agent gateway
+ *
+ * Delete an agentgateway instance by ID.
+ */
+export const deleteAgentGateway = <ThrowOnError extends boolean = false>(options: Options<DeleteAgentGatewayData, ThrowOnError>) => (options.client ?? client).delete<DeleteAgentGatewayResponses, DeleteAgentGatewayErrors, ThrowOnError>({ url: '/v0/agentgateways/{gatewayId}', ...options });
+
+/**
+ * Get agent gateway
+ *
+ * Get an agentgateway instance by ID.
+ */
+export const getAgentGateway = <ThrowOnError extends boolean = false>(options: Options<GetAgentGatewayData, ThrowOnError>) => (options.client ?? client).get<GetAgentGatewayResponses, GetAgentGatewayErrors, ThrowOnError>({ url: '/v0/agentgateways/{gatewayId}', ...options });
 
 /**
  * List Agentic agents

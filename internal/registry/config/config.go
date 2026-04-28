@@ -32,7 +32,8 @@ type Config struct {
 	PlatformMode string `env:"PLATFORM_MODE" envDefault:"kubernetes"`
 
 	// Agent Gateway Configuration
-	AgentGatewayPort uint16 `env:"AGENT_GATEWAY_PORT" envDefault:"8081"`
+	AgentGatewayPort              uint16 `env:"AGENT_GATEWAY_PORT" envDefault:"8081"`
+	AgentGatewayHealthCheckInterval string `env:"AGENT_GATEWAY_HEALTH_CHECK_INTERVAL" envDefault:"30s"`
 
 	// Runtime Configuration
 	RuntimeDir string `env:"RUNTIME_DIR" envDefault:"/tmp/arctl-runtime"`

@@ -22,18 +22,21 @@ import { ServerCard } from "@/components/server-card"
 import { SkillCard } from "@/components/skill-card"
 import { AgentCard } from "@/components/agent-card"
 import { PromptCard } from "@/components/prompt-card"
+import { AgentGatewayCard } from "@/components/agentgateway-card"
 import { ServerDetail } from "@/components/server-detail"
 import { SkillDetail } from "@/components/skill-detail"
 import { AgentDetail } from "@/components/agent-detail"
 import { PromptDetail } from "@/components/prompt-detail"
+import { AgentGatewayDetail } from "@/components/agentgateway-detail"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { ImportDialog } from "@/components/import-dialog"
 import { AddServerDialog } from "@/components/add-server-dialog"
 import { AddSkillDialog } from "@/components/add-skill-dialog"
 import { AddAgentDialog } from "@/components/add-agent-dialog"
 import { AddPromptDialog } from "@/components/add-prompt-dialog"
+import { AddAgentGatewayDialog } from "@/components/add-agentgateway-dialog"
 import { DeployDialog } from "@/components/deploy-dialog"
-import { listServersV0, listSkillsV0, listAgentsV0, listPromptsV0, ServerResponse, SkillResponse, AgentResponse, PromptResponse } from "@/lib/admin-api"
+import { listServersV0, listSkillsV0, listAgentsV0, listPromptsV0, listAgentGateways, deleteAgentGateway, ServerResponse, SkillResponse, AgentResponse, PromptResponse, AgentGateway } from "@/lib/admin-api"
 import MCPIcon from "@/components/icons/mcp"
 import {
   Search,
@@ -45,6 +48,7 @@ import {
   ArrowUpDown,
   ChevronDown,
   FileText,
+  Globe,
 } from "lucide-react"
 
 // Grouped server type
@@ -71,13 +75,14 @@ interface GroupedAgent extends AgentResponse {
   allVersions: AgentResponse[]
 }
 
-type TabKey = "servers" | "skills" | "agents" | "prompts"
+type TabKey = "servers" | "skills" | "agents" | "prompts" | "agentgateways"
 
 const TAB_CONFIG: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   { key: "servers", label: "Servers", icon: <MCPIcon /> },
   { key: "skills", label: "Skills", icon: <Zap className="h-3.5 w-3.5" /> },
   { key: "agents", label: "Agents", icon: <Bot className="h-3.5 w-3.5" /> },
   { key: "prompts", label: "Prompts", icon: <FileText className="h-3.5 w-3.5" /> },
+  { key: "agentgateways", label: "Gateways", icon: <Globe className="h-3.5 w-3.5" /> },
 ]
 
 export default function AdminPage() {
@@ -100,12 +105,16 @@ export default function AdminPage() {
   const [addSkillDialogOpen, setAddSkillDialogOpen] = useState(false)
   const [addAgentDialogOpen, setAddAgentDialogOpen] = useState(false)
   const [addPromptDialogOpen, setAddPromptDialogOpen] = useState(false)
+  const [addAgentGatewayDialogOpen, setAddAgentGatewayDialogOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedServer, setSelectedServer] = useState<ServerResponse | null>(null)
   const [selectedSkill, setSelectedSkill] = useState<GroupedSkill | null>(null)
   const [selectedAgent, setSelectedAgent] = useState<GroupedAgent | null>(null)
   const [selectedPrompt, setSelectedPrompt] = useState<GroupedPrompt | null>(null)
+  const [agentGateways, setAgentGateways] = useState<AgentGateway[]>([])
+  const [filteredAgentGateways, setFilteredAgentGateways] = useState<AgentGateway[]>([])
+  const [selectedAgentGateway, setSelectedAgentGateway] = useState<AgentGateway | null>(null)
   const [deployServerTarget, setDeployServerTarget] = useState<ServerResponse | null>(null)
   const [deployAgentTarget, setDeployAgentTarget] = useState<AgentResponse | null>(null)
 
@@ -303,6 +312,13 @@ export default function AdminPage() {
 
       const grouped = groupServersByName(allServers)
       setGroupedServers(grouped)
+
+      try {
+        const { data: gatewayData } = await listAgentGateways({ throwOnError: true })
+        setAgentGateways(gatewayData.agentGateways)
+      } catch {
+        setAgentGateways([])
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch data")
     } finally {
@@ -312,12 +328,13 @@ export default function AdminPage() {
 
   useEffect(() => { fetchData() }, [])
 
-  const isSheetOpen = !!(selectedServer || selectedSkill || selectedAgent || selectedPrompt)
+  const isSheetOpen = !!(selectedServer || selectedSkill || selectedAgent || selectedPrompt || selectedAgentGateway)
   const closeSheet = () => {
     setSelectedServer(null)
     setSelectedSkill(null)
     setSelectedAgent(null)
     setSelectedPrompt(null)
+    setSelectedAgentGateway(null)
   }
 
   // Filter and sort servers
@@ -389,12 +406,17 @@ export default function AdminPage() {
         prompt.description?.toLowerCase().includes(query) ||
         prompt.content?.toLowerCase().includes(query)
       ))
+      setFilteredAgentGateways(agentGateways.filter((gw) =>
+        gw.name?.toLowerCase().includes(query) ||
+        gw.address?.toLowerCase().includes(query)
+      ))
     } else {
       setFilteredSkills(groupedSkills)
       setFilteredAgents(groupedAgents)
       setFilteredPrompts(groupedPrompts)
+      setFilteredAgentGateways(agentGateways)
     }
-  }, [searchQuery, groupedSkills, groupedAgents, groupedPrompts])
+  }, [searchQuery, groupedSkills, groupedAgents, groupedPrompts, agentGateways])
 
   const getCount = (tab: TabKey) => {
     switch (tab) {
@@ -402,6 +424,7 @@ export default function AdminPage() {
       case "skills": return groupedSkills.length
       case "agents": return groupedAgents.length
       case "prompts": return groupedPrompts.length
+      case "agentgateways": return agentGateways.length
     }
   }
 
@@ -489,6 +512,10 @@ export default function AdminPage() {
                 <DropdownMenuItem onClick={() => setAddPromptDialogOpen(true)}>
                   <FileText className="mr-2 h-4 w-4" />
                   Prompt
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setAddAgentGatewayDialogOpen(true)}>
+                  <Globe className="mr-2 h-4 w-4" />
+                  Gateway
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -679,6 +706,40 @@ export default function AdminPage() {
               </div>
             )
           )}
+
+          {activeTab === "agentgateways" && (
+            filteredAgentGateways.length === 0 ? (
+              <EmptyState
+                icon={<Globe className="h-8 w-8 text-muted-foreground" />}
+                title={agentGateways.length === 0 ? "No gateways registered" : "No gateways match your filters"}
+                description={agentGateways.length === 0 ? "Add an agentgateway instance to get started" : "Try adjusting your search"}
+                action={agentGateways.length === 0 ? (
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setAddAgentGatewayDialogOpen(true)}>
+                    <Plus className="h-3.5 w-3.5" /> Add Gateway
+                  </Button>
+                ) : undefined}
+              />
+            ) : (
+              <div className="divide-y">
+                {filteredAgentGateways.map((gw) => (
+                  <AgentGatewayCard
+                    key={gw.id}
+                    gateway={gw}
+                    onClick={() => setSelectedAgentGateway(gw)}
+                    onDelete={async (g) => {
+                      if (!confirm(`Delete gateway "${g.name}"?`)) return
+                      try {
+                        await deleteAgentGateway({ path: { gatewayId: g.id }, throwOnError: true })
+                        fetchData()
+                      } catch (err) {
+                        console.error("Failed to delete gateway", err)
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+            )
+          )}
         </div>
       </div>
 
@@ -687,6 +748,7 @@ export default function AdminPage() {
       <AddSkillDialog open={addSkillDialogOpen} onOpenChange={setAddSkillDialogOpen} onSkillAdded={fetchData} />
       <AddAgentDialog open={addAgentDialogOpen} onOpenChange={setAddAgentDialogOpen} onAgentAdded={() => {}} />
       <AddPromptDialog open={addPromptDialogOpen} onOpenChange={setAddPromptDialogOpen} onPromptAdded={fetchData} />
+      <AddAgentGatewayDialog open={addAgentGatewayDialogOpen} onOpenChange={setAddAgentGatewayDialogOpen} onGatewayAdded={fetchData} />
 
       <DeployDialog
         open={!!deployServerTarget}
@@ -709,7 +771,8 @@ export default function AdminPage() {
             {selectedServer ? (selectedServer.server.title || selectedServer.server.name) :
              selectedAgent ? selectedAgent.agent.name :
              selectedSkill ? (selectedSkill.skill.title || selectedSkill.skill.name) :
-             selectedPrompt ? selectedPrompt.prompt.name : 'Details'}
+             selectedPrompt ? selectedPrompt.prompt.name :
+             selectedAgentGateway ? selectedAgentGateway.name : 'Details'}
           </SheetTitle>
           {selectedServer && (
             <ServerDetail
@@ -720,6 +783,7 @@ export default function AdminPage() {
           {selectedSkill && <SkillDetail skill={selectedSkill} allVersions={selectedSkill.allVersions} />}
           {selectedAgent && <AgentDetail agent={selectedAgent} allVersions={selectedAgent.allVersions} />}
           {selectedPrompt && <PromptDetail prompt={selectedPrompt} allVersions={selectedPrompt.allVersions} />}
+          {selectedAgentGateway && <AgentGatewayDetail gateway={selectedAgentGateway} />}
         </SheetContent>
       </Sheet>
     </main>

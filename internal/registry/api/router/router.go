@@ -177,6 +177,10 @@ func NewHumaAPI(
 			Description: "Operations for managing deployment provider instances",
 		},
 		{
+			Name:        "agentgateways",
+			Description: "Operations for managing agentgateway instances",
+		},
+		{
 			Name:        "publish",
 			Description: "Operations for publishing MCP servers to the registry",
 		},

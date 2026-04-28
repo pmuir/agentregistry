@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	apitypes "github.com/agentregistry-dev/agentregistry/internal/registry/api/apitypes"
+	v0agentgateways "github.com/agentregistry-dev/agentregistry/internal/registry/api/handlers/v0/agentgateways"
 	v0agents "github.com/agentregistry-dev/agentregistry/internal/registry/api/handlers/v0/agents"
 	v0apply "github.com/agentregistry-dev/agentregistry/internal/registry/api/handlers/v0/apply"
 	v0deployments "github.com/agentregistry-dev/agentregistry/internal/registry/api/handlers/v0/deployments"
@@ -17,6 +18,7 @@ import (
 	v0skills "github.com/agentregistry-dev/agentregistry/internal/registry/api/handlers/v0/skills"
 	v0version "github.com/agentregistry-dev/agentregistry/internal/registry/api/handlers/v0/version"
 	"github.com/agentregistry-dev/agentregistry/internal/registry/kinds"
+	agentgatewaysvc "github.com/agentregistry-dev/agentregistry/internal/registry/service/agentgateway"
 	agentsvc "github.com/agentregistry-dev/agentregistry/internal/registry/service/agent"
 	deploymentsvc "github.com/agentregistry-dev/agentregistry/internal/registry/service/deployment"
 	promptsvc "github.com/agentregistry-dev/agentregistry/internal/registry/service/prompt"
@@ -35,12 +37,13 @@ import (
 
 // RegistryServices bundles all per-domain service registries for route registration.
 type RegistryServices struct {
-	Server     serversvc.Registry
-	Agent      agentsvc.Registry
-	Skill      skillsvc.Registry
-	Prompt     promptsvc.Registry
-	Provider   providersvc.Registry
-	Deployment deploymentsvc.Registry
+	Server       serversvc.Registry
+	Agent        agentsvc.Registry
+	Skill        skillsvc.Registry
+	Prompt       promptsvc.Registry
+	Provider     providersvc.Registry
+	Deployment   deploymentsvc.Registry
+	AgentGateway agentgatewaysvc.Registry
 }
 
 // RouteOptions contains optional services for route registration.
@@ -87,6 +90,7 @@ func RegisterRoutes(
 	v0servers.RegisterEditEndpoints(api, pathPrefix, svcs.Server, svcs.Deployment)
 	v0providers.RegisterProvidersEndpoints(api, pathPrefix, svcs.Provider)
 	v0deployments.RegisterDeploymentsEndpoints(api, pathPrefix, svcs.Deployment)
+	v0agentgateways.RegisterAgentGatewaysEndpoints(api, pathPrefix, svcs.AgentGateway)
 	v0agents.RegisterAgentsEndpoints(api, pathPrefix, svcs.Agent, svcs.Deployment)
 	v0agents.RegisterAgentsCreateEndpoint(api, pathPrefix, svcs.Agent, svcs.Deployment)
 	v0skills.RegisterSkillsEndpoints(api, pathPrefix, svcs.Skill)

@@ -412,6 +412,43 @@ func (c *Client) DeleteProvider(providerID string) error {
 	return c.doJSON(req, nil)
 }
 
+// GetAgentGateways returns all agent gateways.
+func (c *Client) GetAgentGateways() ([]*models.AgentGateway, error) {
+	req, err := c.newRequest(http.MethodGet, "/agentgateways")
+	if err != nil {
+		return nil, err
+	}
+	var resp struct {
+		AgentGateways []*models.AgentGateway `json:"agentGateways"`
+	}
+	if err := c.doJSON(req, &resp); err != nil {
+		return nil, err
+	}
+	return resp.AgentGateways, nil
+}
+
+// GetAgentGateway returns a single agent gateway by ID.
+func (c *Client) GetAgentGateway(gatewayID string) (*models.AgentGateway, error) {
+	req, err := c.newRequest(http.MethodGet, "/agentgateways/"+url.PathEscape(gatewayID))
+	if err != nil {
+		return nil, err
+	}
+	var resp models.AgentGateway
+	if err := c.doJSON(req, &resp); err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// DeleteAgentGateway deletes an agent gateway by ID.
+func (c *Client) DeleteAgentGateway(gatewayID string) error {
+	req, err := c.newRequest(http.MethodDelete, "/agentgateways/"+url.PathEscape(gatewayID))
+	if err != nil {
+		return err
+	}
+	return c.doJSON(req, nil)
+}
+
 // GetAgents returns all agents from connected registries
 func (c *Client) GetAgents() ([]*models.AgentResponse, error) {
 	limit := 100

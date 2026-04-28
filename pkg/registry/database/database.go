@@ -215,6 +215,19 @@ type ProviderStore interface {
 	DeleteProvider(ctx context.Context, providerID string) error
 }
 
+type AgentGatewayReader interface {
+	ListAgentGateways(ctx context.Context) ([]*models.AgentGateway, error)
+	GetAgentGateway(ctx context.Context, gatewayID string) (*models.AgentGateway, error)
+}
+
+type AgentGatewayStore interface {
+	AgentGatewayReader
+	CreateAgentGateway(ctx context.Context, in *models.CreateAgentGatewayInput) (*models.AgentGateway, error)
+	UpdateAgentGateway(ctx context.Context, gatewayID string, in *models.UpdateAgentGatewayInput) (*models.AgentGateway, error)
+	UpdateAgentGatewayStatus(ctx context.Context, gatewayID string, status string) error
+	DeleteAgentGateway(ctx context.Context, gatewayID string) error
+}
+
 // Scope exposes the domain repositories that share the same backing executor.
 // Transaction callbacks receive a transaction-bound Scope.
 type Scope interface {
@@ -224,6 +237,7 @@ type Scope interface {
 	Skills() SkillStore
 	Prompts() PromptStore
 	Deployments() DeploymentStore
+	AgentGateways() AgentGatewayStore
 }
 
 // Transactor provides transaction orchestration without exposing the backing

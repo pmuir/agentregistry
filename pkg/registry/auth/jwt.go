@@ -18,11 +18,12 @@ import (
 type PermissionArtifactType string
 
 const (
-	PermissionArtifactTypeAgent    PermissionArtifactType = "agent"
-	PermissionArtifactTypeSkill    PermissionArtifactType = "skill"
-	PermissionArtifactTypeServer   PermissionArtifactType = "server"
-	PermissionArtifactTypePrompt   PermissionArtifactType = "prompt"
-	PermissionArtifactTypeProvider PermissionArtifactType = "provider"
+	PermissionArtifactTypeAgent        PermissionArtifactType = "agent"
+	PermissionArtifactTypeSkill        PermissionArtifactType = "skill"
+	PermissionArtifactTypeServer       PermissionArtifactType = "server"
+	PermissionArtifactTypePrompt       PermissionArtifactType = "prompt"
+	PermissionArtifactTypeProvider     PermissionArtifactType = "provider"
+	PermissionArtifactTypeAgentGateway PermissionArtifactType = "agentgateway"
 )
 
 // PermissionAction represents the type of action that can be performed

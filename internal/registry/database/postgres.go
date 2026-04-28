@@ -29,12 +29,13 @@ type repositoryBase struct {
 }
 
 type postgresScope struct {
-	servers     *serverStore
-	providers   *providerStore
-	agents      *agentStore
-	skills      *skillStore
-	prompts     *promptStore
-	deployments *deploymentStore
+	servers       *serverStore
+	providers     *providerStore
+	agents        *agentStore
+	skills        *skillStore
+	prompts       *promptStore
+	deployments   *deploymentStore
+	agentGateways *agentGatewayStore
 }
 
 var _ database.Scope = (*postgresScope)(nil)
@@ -50,12 +51,13 @@ type executor interface {
 func newPostgresScope(executor executor, authz auth.Authorizer, tx pgx.Tx) *postgresScope {
 	base := repositoryBase{executor: executor, authz: authz}
 	return &postgresScope{
-		servers:     &serverStore{repositoryBase: base, tx: tx},
-		providers:   &providerStore{repositoryBase: base},
-		agents:      &agentStore{repositoryBase: base},
-		skills:      &skillStore{repositoryBase: base},
-		prompts:     &promptStore{repositoryBase: base},
-		deployments: &deploymentStore{repositoryBase: base, tx: tx},
+		servers:       &serverStore{repositoryBase: base, tx: tx},
+		providers:     &providerStore{repositoryBase: base},
+		agents:        &agentStore{repositoryBase: base},
+		skills:        &skillStore{repositoryBase: base},
+		prompts:       &promptStore{repositoryBase: base},
+		deployments:   &deploymentStore{repositoryBase: base, tx: tx},
+		agentGateways: &agentGatewayStore{repositoryBase: base},
 	}
 }
 
@@ -81,6 +83,10 @@ func (s *postgresScope) Prompts() database.PromptStore {
 
 func (s *postgresScope) Deployments() database.DeploymentStore {
 	return s.deployments
+}
+
+func (s *postgresScope) AgentGateways() database.AgentGatewayStore {
+	return s.agentGateways
 }
 
 func NewPostgreSQL(ctx context.Context, connectionURI string, authz auth.Authorizer, vectorEnabled bool) (*PostgreSQL, error) {
@@ -138,6 +144,9 @@ func (db *PostgreSQL) Skills() database.SkillStore       { return db.rootScope.s
 func (db *PostgreSQL) Prompts() database.PromptStore     { return db.rootScope.prompts }
 func (db *PostgreSQL) Deployments() database.DeploymentStore {
 	return db.rootScope.deployments
+}
+func (db *PostgreSQL) AgentGateways() database.AgentGatewayStore {
+	return db.rootScope.agentGateways
 }
 
 func (db *PostgreSQL) InTransaction(ctx context.Context, fn func(ctx context.Context, scope database.Scope) error) error {

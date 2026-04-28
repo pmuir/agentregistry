@@ -403,6 +403,8 @@ func (f *fakeProviderDeploymentService) Prompts() database.PromptStore { return 
 
 func (f *fakeProviderDeploymentService) Deployments() database.DeploymentStore { return f }
 
+func (f *fakeProviderDeploymentService) AgentGateways() database.AgentGatewayStore { return nil }
+
 func (f *fakeProviderDeploymentService) DeletePrompt(context.Context, string, string) error {
 	return nil
 }

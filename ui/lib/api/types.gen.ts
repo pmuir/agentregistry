@@ -4,6 +4,20 @@ export type ClientOptions = {
     baseUrl: `${string}://${string}` | (string & {});
 };
 
+export type AgentGateway = {
+    address: string;
+    createdAt: string;
+    id: string;
+    name: string;
+    status: string;
+    updatedAt: string;
+};
+
+export type AgentGatewaysListResponseBody = {
+    agentGateways: Array<AgentGateway>;
+    count: number;
+};
+
 export type AgentJson = {
     description: string;
     framework: string;
@@ -134,6 +148,12 @@ export type Argument = {
     variables?: {
         [key: string]: Input;
     };
+};
+
+export type CreateAgentGatewayInput = {
+    address: string;
+    id?: string;
+    name: string;
 };
 
 export type CreateProviderInput = {
@@ -752,6 +772,116 @@ export type VersionBody = {
      */
     version: string;
 };
+
+export type ListAgentGatewaysData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v0/agentgateways';
+};
+
+export type ListAgentGatewaysErrors = {
+    /**
+     * Error
+     */
+    default: ErrorModel;
+};
+
+export type ListAgentGatewaysError = ListAgentGatewaysErrors[keyof ListAgentGatewaysErrors];
+
+export type ListAgentGatewaysResponses = {
+    /**
+     * OK
+     */
+    200: AgentGatewaysListResponseBody;
+};
+
+export type ListAgentGatewaysResponse = ListAgentGatewaysResponses[keyof ListAgentGatewaysResponses];
+
+export type CreateAgentGatewayData = {
+    body: CreateAgentGatewayInput;
+    path?: never;
+    query?: never;
+    url: '/v0/agentgateways';
+};
+
+export type CreateAgentGatewayErrors = {
+    /**
+     * Error
+     */
+    default: ErrorModel;
+};
+
+export type CreateAgentGatewayError = CreateAgentGatewayErrors[keyof CreateAgentGatewayErrors];
+
+export type CreateAgentGatewayResponses = {
+    /**
+     * OK
+     */
+    200: AgentGateway;
+};
+
+export type CreateAgentGatewayResponse = CreateAgentGatewayResponses[keyof CreateAgentGatewayResponses];
+
+export type DeleteAgentGatewayData = {
+    body?: never;
+    path: {
+        /**
+         * Agent gateway ID
+         */
+        gatewayId: string;
+    };
+    query?: never;
+    url: '/v0/agentgateways/{gatewayId}';
+};
+
+export type DeleteAgentGatewayErrors = {
+    /**
+     * Error
+     */
+    default: ErrorModel;
+};
+
+export type DeleteAgentGatewayError = DeleteAgentGatewayErrors[keyof DeleteAgentGatewayErrors];
+
+export type DeleteAgentGatewayResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteAgentGatewayResponse = DeleteAgentGatewayResponses[keyof DeleteAgentGatewayResponses];
+
+export type GetAgentGatewayData = {
+    body?: never;
+    path: {
+        /**
+         * Agent gateway ID
+         */
+        gatewayId: string;
+    };
+    query?: never;
+    url: '/v0/agentgateways/{gatewayId}';
+};
+
+export type GetAgentGatewayErrors = {
+    /**
+     * Error
+     */
+    default: ErrorModel;
+};
+
+export type GetAgentGatewayError = GetAgentGatewayErrors[keyof GetAgentGatewayErrors];
+
+export type GetAgentGatewayResponses = {
+    /**
+     * OK
+     */
+    200: AgentGateway;
+};
+
+export type GetAgentGatewayResponse = GetAgentGatewayResponses[keyof GetAgentGatewayResponses];
 
 export type ListAgentsV0Data = {
     body?: never;

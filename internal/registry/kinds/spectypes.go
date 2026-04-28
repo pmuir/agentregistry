@@ -250,6 +250,15 @@ type ProviderSpec struct {
 }
 
 // ---------------------------------------------------------------------------
+// AgentGateway
+// ---------------------------------------------------------------------------
+
+// AgentGatewaySpec is the typed spec: block for a kind: agentgateway declarative document.
+type AgentGatewaySpec struct {
+	Address string `yaml:"address" json:"address"`
+}
+
+// ---------------------------------------------------------------------------
 // Deployment
 // ---------------------------------------------------------------------------
 

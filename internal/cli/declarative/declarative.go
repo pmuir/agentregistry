@@ -263,6 +263,42 @@ func newCLIRegistry() *kinds.Registry {
 		},
 	})
 	reg.Register(kinds.Kind{
+		Kind:     "agentgateway",
+		Plural:   "agentgateways",
+		Aliases:  []string{"AgentGateway", "agent-gateway"},
+		SpecType: reflect.TypeFor[kinds.AgentGatewaySpec](),
+		TableColumns: []kinds.Column{
+			{Header: "NAME"}, {Header: "ADDRESS"}, {Header: "STATUS"},
+		},
+		ListFunc: kinds.MakeListFunc(func() ([]*models.AgentGateway, error) {
+			return apiClient.GetAgentGateways()
+		}),
+		RowFunc: func(item any) []string {
+			gw := item.(*models.AgentGateway)
+			return []string{gw.Name, gw.Address, gw.Status}
+		},
+		ToResourceFunc: func(item any) *kinds.Document {
+			gw, ok := item.(*models.AgentGateway)
+			if !ok {
+				return nil
+			}
+			return &kinds.Document{
+				APIVersion: scheme.APIVersion,
+				Kind:       "AgentGateway",
+				Metadata:   kinds.Metadata{Name: gw.ID},
+				Spec: kinds.AgentGatewaySpec{
+					Address: gw.Address,
+				},
+			}
+		},
+		Get: func(_ context.Context, name, _ string) (any, error) {
+			return apiClient.GetAgentGateway(name)
+		},
+		Delete: func(_ context.Context, name, _ string, _ bool) error {
+			return apiClient.DeleteAgentGateway(name)
+		},
+	})
+	reg.Register(kinds.Kind{
 		Kind:     "deployment",
 		Plural:   "deployments",
 		Aliases:  []string{"Deployment"},

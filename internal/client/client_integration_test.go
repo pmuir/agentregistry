@@ -101,6 +101,7 @@ func (f *fakeClientRegistry) Providers() database.ProviderStore { return f }
 func (f *fakeClientRegistry) Deployments() database.DeploymentStore {
 	return f.deploymentStore
 }
+func (f *fakeClientRegistry) AgentGateways() database.AgentGatewayStore { return nil }
 func (f *fakeClientRegistry) InTransaction(ctx context.Context, fn func(context.Context, database.Scope) error) error {
 	return fn(ctx, f)
 }

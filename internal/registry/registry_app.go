@@ -23,6 +23,7 @@ import (
 	"github.com/agentregistry-dev/agentregistry/internal/registry/config"
 	internaldb "github.com/agentregistry-dev/agentregistry/internal/registry/database"
 	"github.com/agentregistry-dev/agentregistry/internal/registry/embeddings"
+	"github.com/agentregistry-dev/agentregistry/internal/registry/healthcheck"
 	"github.com/agentregistry-dev/agentregistry/internal/registry/importer"
 	"github.com/agentregistry-dev/agentregistry/internal/registry/jobs"
 	"github.com/agentregistry-dev/agentregistry/internal/registry/kinds"
@@ -30,6 +31,7 @@ import (
 	"github.com/agentregistry-dev/agentregistry/internal/registry/platforms/local"
 	"github.com/agentregistry-dev/agentregistry/internal/registry/seed"
 	"github.com/agentregistry-dev/agentregistry/internal/registry/service"
+	agentgatewaysvc "github.com/agentregistry-dev/agentregistry/internal/registry/service/agentgateway"
 	agentsvc "github.com/agentregistry-dev/agentregistry/internal/registry/service/agent"
 	deploymentsvc "github.com/agentregistry-dev/agentregistry/internal/registry/service/deployment"
 	promptsvc "github.com/agentregistry-dev/agentregistry/internal/registry/service/prompt"
@@ -153,6 +155,9 @@ func App(ctx context.Context, opts ...types.AppOptions) error {
 		StoreDB:           db,
 		ProviderPlatforms: options.ProviderPlatforms,
 	})
+	agentGatewayService := agentgatewaysvc.New(agentgatewaysvc.Dependencies{
+		StoreDB: db,
+	})
 	providerPlatforms := providerService.PlatformAdapters()
 	deploymentPlatforms := map[string]types.DeploymentPlatformAdapter{
 		"local":      local.NewLocalDeploymentAdapter(serverService, agentService, cfg.RuntimeDir, cfg.AgentGatewayPort),
@@ -204,6 +209,13 @@ func App(ctx context.Context, opts ...types.AppOptions) error {
 				slog.Error("failed to import seed data", "error", err)
 			}
 		}()
+	}
+
+	// Start AgentGateway health checker
+	if interval, err := time.ParseDuration(cfg.AgentGatewayHealthCheckInterval); err == nil && interval > 0 {
+		checker := healthcheck.NewGatewayHealthChecker(db.AgentGateways(), interval, nil)
+		go checker.Run(ctx)
+		slog.Info("agent gateway health checker started", "interval", interval)
 	}
 
 	slog.Info("starting agentregistry", "version", version.Version, "commit", version.GitCommit)
@@ -299,6 +311,23 @@ func App(ctx context.Context, opts ...types.AppOptions) error {
 		}),
 	})
 	kindReg.Register(kinds.Kind{
+		Kind:     "agentgateway",
+		Plural:   "agentgateways",
+		Aliases:  []string{"AgentGateway", "agent-gateway"},
+		SpecType: reflect.TypeFor[kinds.AgentGatewaySpec](),
+		Apply:    agentGatewayApplyFunc(agentGatewayService),
+		Get:      func(ctx context.Context, name, _ string) (any, error) { return agentGatewayService.GetAgentGateway(ctx, name) },
+		Delete: func(ctx context.Context, name, _ string, _ bool) error {
+			return agentGatewayService.DeleteAgentGateway(ctx, name)
+		},
+		TableColumns: []kinds.Column{
+			{Header: "NAME"}, {Header: "ADDRESS"}, {Header: "STATUS"},
+		},
+		InitTemplate: kinds.MakeInitTemplate("agentgateway", kinds.AgentGatewaySpec{
+			Address: "http://localhost:8081",
+		}),
+	})
+	kindReg.Register(kinds.Kind{
 		Kind:     "deployment",
 		Plural:   "deployments",
 		Aliases:  []string{"Deployment"},
@@ -332,12 +361,13 @@ func App(ctx context.Context, opts ...types.AppOptions) error {
 
 	// Initialize HTTP server
 	baseServer := api.NewServer(cfg, router.RegistryServices{
-		Server:     serverService,
-		Agent:      agentService,
-		Skill:      skillService,
-		Prompt:     promptService,
-		Provider:   providerService,
-		Deployment: deploymentService,
+		Server:       serverService,
+		Agent:        agentService,
+		Skill:        skillService,
+		Prompt:       promptService,
+		Provider:     providerService,
+		Deployment:   deploymentService,
+		AgentGateway: agentGatewayService,
 	}, metrics, versionInfo, options.UIHandler, authnProvider, routeOpts)
 
 	var server types.Server
@@ -445,6 +475,34 @@ func setupLogging(levelStr string) {
 	}
 	// set all loggers to the specified level
 	logging.Reset(level)
+}
+
+// agentGatewayApplyFunc returns the Apply function for the agentgateway kind.
+func agentGatewayApplyFunc(svc agentgatewaysvc.Registry) kinds.ApplyFunc {
+	return func(ctx context.Context, doc *kinds.Document, opts kinds.ApplyOpts) (*kinds.Result, error) {
+		spec, err := kinds.AssertSpec[kinds.AgentGatewaySpec]("agentgateway", doc)
+		if err != nil {
+			return nil, err
+		}
+		if spec.Address == "" {
+			return nil, fmt.Errorf("agentgateway: spec.address is required")
+		}
+		if opts.DryRun {
+			_, err := svc.GetAgentGateway(ctx, doc.Metadata.Name)
+			if err != nil {
+				return &kinds.Result{Kind: "agentgateway", Name: doc.Metadata.Name, Status: kinds.StatusCreated}, nil
+			}
+			return &kinds.Result{Kind: "agentgateway", Name: doc.Metadata.Name, Status: kinds.StatusConfigured}, nil
+		}
+		name := doc.Metadata.Name
+		address := spec.Address
+		if _, err := svc.ApplyAgentGateway(ctx, name, &models.UpdateAgentGatewayInput{
+			Name: &name, Address: &address,
+		}); err != nil {
+			return nil, err
+		}
+		return kinds.AppliedResult("agentgateway", doc), nil
+	}
 }
 
 // providerApplyFunc returns the Apply function for the provider kind.
